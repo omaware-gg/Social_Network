@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model School {
+  id        Int      @id @default(autoincrement())
+  name      String
+  grade     String
+  sections  Section[]
+  parents   Parent[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Section {
+  id        Int      @id @default(autoincrement())
+  name      String
+  grade     String
+  schoolId  Int
+  school    School   @relation(fields: [schoolId], references: [id])
+  parents   Parent[]
+  posts     Post[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Parent {
+  id         Int       @id @default(autoincrement())
+  name       String
+  email      String    @unique
+  schoolId   Int?
+  sectionId  Int?
+  school     School?   @relation(fields: [schoolId], references: [id])
+  section    Section?  @relation(fields: [sectionId], references: [id])
+  posts      Post[]
+  comments   Comment[]
+  votes      Vote[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Post {
+  id         Int       @id @default(autoincrement())
+  title      String
+  content    String
+  parentId   Int
+  sectionId  Int
+  parent     Parent    @relation(fields: [parentId], references: [id])
+  section    Section   @relation(fields: [sectionId], references: [id])
+  comments   Comment[]
+  votes      Vote[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Comment {
+  id         Int       @id @default(autoincrement())
+  content    String
+  parentId   Int
+  postId     Int
+  parent     Parent    @relation(fields: [parentId], references: [id])
+  post       Post      @relation(fields: [postId], references: [id])
+  votes      Vote[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Vote {
+  id         Int       @id @default(autoincrement())
+  parentId   Int
+  postId     Int?
+  commentId  Int?
+  parent     Parent    @relation(fields: [parentId], references: [id])
+  post       Post?     @relation(fields: [postId], references: [id])
+  comment    Comment?  @relation(fields: [commentId], references: [id])
+  value      Int
+  createdAt  DateTime  @default(now())
+}
